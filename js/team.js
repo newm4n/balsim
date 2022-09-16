@@ -107,9 +107,9 @@ class Team {
     return ret;
   }
 
-  reposition(opponentTeam, ball) {
+  reposition(opponentTeam, ball, game) {
     for(let i = 0; i < this.players.length; i++) {
-      this.players[i].reposition(this, opponentTeam, ball);
+      this.players[i].reposition(this, opponentTeam, ball, game);
     }
   }
 

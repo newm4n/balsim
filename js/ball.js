@@ -15,7 +15,7 @@ class Ball {
     this.last_kicker = player;
   }
 
-  reposition(field) {
+  reposition(field, game) {
     this.velocityV -= 1;
     this.altitude += this.velocityV;
     if (this.altitude <= 0) {

@@ -16,7 +16,7 @@ class Player {
     this.shirtColorB = "#0c1fc7";
     this.shirtColorC = "#0cb4c7";
 
-    this.intent = "to_ball"; // to_ball, carry_ball, goal_shoot, pass_ball, to_post
+    this.intent = "to_ball"; // to_ball, carry_ball, goal_shoot, pass_ball, to_post, idle
     this.activity = "idle"; // sprint, run, walk, idle
     this.currentStamina = 1.0;
 
@@ -35,6 +35,11 @@ class Player {
     let pos = this.zone.getRandomPointWithin();
     this.setPosition(pos.x, pos.y);
   }
+  goToZone() {
+    this.intent = "to_post";
+    this.activity = "sprint";
+    this.destination = this.zone.getRandomPointWithin();
+  }
   setPosition(x,y) {
     this.location.x = x;
     this.location.y = y;
@@ -50,7 +55,7 @@ class Player {
     this.shirtColorC = c;
   }
 
-  reposition(myTeam, opponentTeam, ball) {
+  reposition(myTeam, opponentTeam, ball, game) {
 
     if (this.currentStamina <= 1.0 && this.currentStamina >= 0.3) {
       if (this.activity === "idle") {
@@ -73,26 +78,33 @@ class Player {
       }
     }
 
+    if (this.intent === "to_post") {
+      this.heading = this.location.headingTo(this.destination);
+      this.location.moveTo(this.heading, this.getSpeed());
+      if (this.location.distanceTo(this.destination) < 100) {
+        this.intent = "idle";
+        this.activity = "idle";
+      }
+    }
 
     if (this.role === "attack") {
-      // if carry ball (distance to ball is 1.5 meter) and location to goal is less than 30 meter
-      if (this.location.distanceTo(ball.location) < 100.0 && this.location.distanceTo(opponentTeam.getGoalLine().midPoint()) < 3000.0) {
-        // carry ball closer to enemy goal
-        this.heading = this.location.headingTo(ball.location);
-        this.intent = "carry_ball";
-        this.activity = "sprint";
-        ball.last_kicker = this;
-        ball.setTrajectory(this,  ball.location.headingTo(opponentTeam.getGoalLine().midPoint()), 0,this.speed * 2.5);
-      }
       // if carry ball (distance to ball is 1.5 meter) and location to goal is less than 10 meter
-      else if (this.location.distanceTo(ball.location) < 100 && this.location.distanceTo(opponentTeam.getGoalLine().midPoint()) < 1000) {
+    if (this.location.distanceTo(ball.location) < 100 && this.location.distanceTo(opponentTeam.getGoalLine().midPoint()) < 1500.0) {
         // carry ball closer to enemy goal
         this.heading = this.location.headingTo(ball.location);
         this.intent = "goal_shoot";
         this.activity = "sprint";
-        ball.last_kicker = this;
-        ball.setTrajectory(this, ball.location.headingTo(opponentTeam.getGoalLine().midPoint()), 10,ball.location.distanceTo(opponentTeam.getGoalLine().midPoint()) * 1.5);
+        ball.setTrajectory(this, ball.location.headingTo(opponentTeam.getGoalLine().midPoint()), 10,90);
       }
+      // if carry ball (distance to ball is 1.5 meter) and location to goal is less than 30 meter
+      else if (this.location.distanceTo(ball.location) < 100.0 && this.location.distanceTo(opponentTeam.getGoalLine().midPoint()) < 3000.0) {
+        // carry ball closer to enemy goal
+        this.heading = this.location.headingTo(ball.location);
+        this.intent = "carry_ball";
+        this.activity = "sprint";
+        ball.setTrajectory(this,  ball.location.headingTo(opponentTeam.getGoalLine().midPoint()), 0,this.speed * 2.5);
+      }
+
       // distance to ball is less than 20 meters and distance to goal is less than 30 meters, then chase the ball
       else if (this.location.distanceTo(ball.location) < 2000 && this.location.distanceTo(opponentTeam.getGoalLine().midPoint()) < 3000 ) {
           // chase ball
@@ -101,11 +113,6 @@ class Player {
         this.activity = "sprint";
         this.location.moveTo(this.heading, this.getSpeed());
       }
-      // this.heading = this.location.headingTo(ball.location);
-      // this.intent = "to_ball";
-      // this.activity = "sprint";
-      // this.location.moveTo(this.heading, this.getSpeed());
-
     }
 
   }

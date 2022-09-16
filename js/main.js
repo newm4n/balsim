@@ -32,14 +32,14 @@ TB.addPlayer(new Player("Ricky", "Mike", "attack", 13, 100, 100,100));
 TB.addPlayer(new Player("Michael", "Jackson", "attack", 13, 100, 100,100));
 
 const field = new Field(TA,TB);
+const game = new Game(TA,TB,field.ball);
 
 function play() {
-  field.reposition();
+  field.reposition(game);
   field.draw(c);
 }
 
 function frame() {
-  play();
   window.requestAnimationFrame(play);
 }
 

@@ -20,15 +20,15 @@ class Field {
   }
 
 
-  reposition() {
-    this.ball.reposition(this);
-    this.teamA.reposition(this.teamB, this.ball);
-    this.teamB.reposition(this.teamA, this.ball);
+  reposition(game) {
+    this.ball.reposition(this, game);
+    this.teamA.reposition(this.teamB, this.ball, game);
+    this.teamB.reposition(this.teamA, this.ball, game);
   }
 
   draw(canvasContext) {
     canvasContext.save();
-    let zoom = 0.08;
+    let zoom = 0.07;
     // zoom transform
     // canvasContext.transform(zoom, 0,0,zoom,0,0);
     canvasContext.translate(25,25);
