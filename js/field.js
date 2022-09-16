@@ -5,7 +5,7 @@ class Field {
     this.teamB = teamB;
     this.teamB.assignPlayerZone("right");
     this.ball = new Ball(5000, 3200);
-    this.ball.setTrajectory(undefined, 110, 0,70);
+    this.ball.setTrajectory(undefined, 210, 0,80);
 
     this.event = "gameOn";
 
