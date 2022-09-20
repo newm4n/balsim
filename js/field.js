@@ -5,7 +5,7 @@ class Field {
     this.teamB = teamB;
     this.teamB.assignPlayerZone("right");
     this.ball = new Ball(5000, 3200);
-    this.ball.setTrajectory(undefined, 210, 0,80);
+    this.ball.setTrajectory(undefined, 210, 0,0);
 
     this.event = "gameOn";
 
@@ -28,7 +28,7 @@ class Field {
 
   draw(canvasContext) {
     canvasContext.save();
-    let zoom = 0.07;
+    let zoom = 0.12;
     // zoom transform
     // canvasContext.transform(zoom, 0,0,zoom,0,0);
     canvasContext.translate(25,25);

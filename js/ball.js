@@ -6,16 +6,27 @@ class Ball {
     this.velocityV = 0; // in cm
     this.velocityH = 0; // in cm
     this.last_kicker = undefined;
+    this.locked = false;
+    this.lockCount = 10;
   }
 
   setTrajectory(player, direction, velocityV, velocityH) {
-    this.direction = direction;
-    this.velocityV = velocityV;
-    this.velocityH = velocityH;
-    this.last_kicker = player;
+    if(this.locked === false) {
+      this.direction = direction;
+      this.velocityV = velocityV;
+      this.velocityH = velocityH;
+      this.last_kicker = player;
+      this.locked = true;
+      this.lockCount = 10;
+    }
   }
 
   reposition(field, game) {
+    if(this.locked && this.lockCount > 0) {
+      this.lockCount--;
+    } else if(this.locked && this.lockCount === 0) {
+      this.locked = false;
+    }
     this.velocityV -= 1;
     this.altitude += this.velocityV;
     if (this.altitude <= 0) {
@@ -60,9 +71,14 @@ class Ball {
     let sizeAdd = (this.altitude / 100) * 20;
     canvasContext.arc(0,0,30 + sizeAdd, 0, 2 * Math.PI);
     canvasContext.closePath();
-    canvasContext.fillStyle = "#FFF";
+    if (this.locked) {
+      canvasContext.fillStyle = "#F00";
+      canvasContext.strokeStyle = "#F09"
+    } else {
+      canvasContext.fillStyle = "#FFF";
+      canvasContext.strokeStyle = "#FF9"
+    }
     canvasContext.fill();
-    canvasContext.strokeStyle = "#FF9"
     canvasContext.stroke();
     canvasContext.restore();
   }

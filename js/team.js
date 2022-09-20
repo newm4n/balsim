@@ -1,3 +1,11 @@
+class BallZoneTransition {
+  constructor(from, to) {
+    this.from = from;
+    this.to = to;
+  }
+}
+
+
 class Team {
   constructor(side, colorA, colorB, colorC) {
     this.side = side;
@@ -5,6 +13,37 @@ class Team {
     this.uniformA = colorA;
     this.uniformB = colorB;
     this.uniformC = colorC;
+
+    this.prevBallZonePlayer = undefined;
+    this.currentBallZonePlayer = undefined;
+  }
+
+  getCloserPlayer(unless, role, location, minDistance) {
+    let closer = this.players[0];
+    if (closer.role === "keeper") {
+      closer = this.players[1];
+    }
+    for (let i = 0; i < this.players.length; i++) {
+      if (this.players[i].role === "keeper" ) continue;
+      if (typeof unless !== "undefined" && this.players[i] === unless) continue;
+      if ( this.players[i].location.distanceTo(location) < minDistance) continue;
+      if (this.players[i].role === role || role === "any") {
+        if ( this.players[i].location.distanceTo(location) < closer.location.distanceTo(location)) {
+          closer = this.players[i];
+        }
+      }
+    }
+    return closer;
+  }
+
+  getPlayersInRange(loc, distance) {
+    let ret = [];
+    for (let i = 1; i < this.players.length; i++) {
+      if (this.players[i].location.distanceTo(loc) < distance) {
+        ret.push(this.players[i]);
+      }
+    }
+    return ret;
   }
 
   getGoalLine() {
@@ -108,6 +147,20 @@ class Team {
   }
 
   reposition(opponentTeam, ball, game) {
+    let ballPlayerZone = undefined;
+    for(let i = 0; i < this.players.length; i++) {
+      if (this.players[i].zone.isContainPoint(ball.location)) {
+        ballPlayerZone = this.players[i];
+      }
+    }
+    if (typeof this.prevBallZonePlayer === "undefined") {
+      this.currentBallZonePlayer = ballPlayerZone;
+      this.prevBallZonePlayer = ballPlayerZone;
+    }
+    if (ballPlayerZone !== this.currentBallZonePlayer) {
+      this.prevBallZonePlayer = this.currentBallZonePlayer;
+      this.currentBallZonePlayer = ballPlayerZone;
+    }
     for(let i = 0; i < this.players.length; i++) {
       this.players[i].reposition(this, opponentTeam, ball, game);
     }
