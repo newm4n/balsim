@@ -129,6 +129,7 @@ class Player {
         } else if (this.intent === "pass_ball") {
           let closest = myTeam.getCloserPlayer(this,"any", ball.location, 1000);
           console.log(closest.role);
+          this.heading = this.location.headingTo(closest.location);
           ball.setTrajectory(this, ball.location.headingTo(closest.location), 10,ball.location.distanceTo(closest.location));
           this.goToZone();
         } else if (this.intent === "carry_ball_forward" || this.intent === "carry_ball_to_goal") {
@@ -143,19 +144,24 @@ class Player {
             }
             if (typeof closest === "undefined") {
               this.heading = this.location.headingTo(ball.location);
+              this.heading = this.location.headingTo(opponentTeam.getGoalLine().midPoint());
               ball.setTrajectory(this, ball.location.headingTo(opponentTeam.getGoalLine().midPoint()), 10,90);
               this.goToZone();
             } else {
+              this.heading = this.location.headingTo(closest.location);
               ball.setTrajectory(this, ball.location.headingTo(closest.location), 10, 80);
 //          ball.setTrajectory(this, ball.location.headingTo(closest.location), 10,ball.location.distanceTo(closest.location) * 10);
               this.goToZone();
             }
           } else  if (this.intent === "carry_ball_to_goal" ) {
+            this.heading = this.location.headingTo(opponentTeam.getGoalLine().midPoint());
             ball.setTrajectory(this,  ball.location.headingTo(opponentTeam.getGoalLine().midPoint()), 0,this.speed * 2.5);
           } else if (this.intent === "carry_ball_forward") {
             if (opponentTeam.side === "left") {
+              this.heading = this.location.headingTo(270);
               ball.setTrajectory(this,  270, 0,this.speed * 2.5);
             } else {
+              this.heading = this.location.headingTo(90);
               ball.setTrajectory(this,  90, 0,this.speed * 2.5);
             }
           }
@@ -218,11 +224,24 @@ class Player {
     drawArr(canvasContext, neck, "black", this.skinColor);
     drawArr(canvasContext, head, "black", this.skinColor);
 
+    canvasContext.lineWidth = 30;
+    canvasContext.strokeStyle = "red";
+    canvasContext.beginPath();
+    canvasContext.arc(0, 0, 100, ToJSDeg(this.heading-15), ToJSDeg(this.heading + 15), false);
+    canvasContext.stroke();
+
     canvasContext.fillStyle = "white";
     canvasContext.font = '170px serif';
-    canvasContext.fillText( this.role + "-" + this.intent, -100,-390);
+    let txt = this.role + "-" + this.intent;
+    let txtWidth = canvasContext.measureText(txt).width;
+    canvasContext.fillText( txt, -(txtWidth/2),-390);
 
     canvasContext.restore();
   }
+}
+
+function ToJSDeg(deg) {
+  let diff = (2 / 360) * (deg % 360);
+  return (diff -  0.5) * Math.PI;
 }
 

@@ -23,25 +23,25 @@ class Point {
     } else if (ndir === 270) {
       this.x = this.x - distance;
     } else if (ndir > 0 && ndir < 90) {
-      let rad = this.degreeToRadian(ndir);
+      let rad = degreeToRadian(ndir);
       let ay = Math.floor(Math.cos(rad) * distance); // opp
       let ax = Math.floor(Math.sin(rad) * distance); // add
       this.x = this.x + ax;
       this.y = this.y - ay;
     } else if (ndir > 90 && ndir < 180) {
-      let rad = this.degreeToRadian(ndir-90);
+      let rad = degreeToRadian(ndir-90);
       let ax = Math.floor(Math.cos(rad) * distance);
       let ay = Math.floor(Math.sin(rad) * distance);
       this.x = this.x + ax;
       this.y = this.y + ay;
     } else if (ndir > 180 && ndir < 270) {
-      let rad = this.degreeToRadian(ndir-180);
+      let rad = degreeToRadian(ndir-180);
       let ay = Math.floor(Math.cos(rad) * distance); // opp
       let ax = Math.floor(Math.sin(rad) * distance); // adj
       this.x = this.x - ax;
       this.y = this.y + ay;
     } else  {
-      let rad = this.degreeToRadian(ndir-270);
+      let rad = degreeToRadian(ndir-270);
       let ax = Math.floor(Math.cos(rad) * distance);
       let ay = Math.floor(Math.sin(rad) * distance);
       this.x = this.x - ax;
@@ -65,34 +65,36 @@ class Point {
         // NE
         let adjacent = this.y - thatPoint.y;
         let opposite = thatPoint.x - this.x;
-        return this.radianToDegree(Math.atan(opposite/adjacent));
+        return radianToDegree(Math.atan(opposite/adjacent));
       }
       // SE
       let adjacent = thatPoint.x - this.x;
       let opposite = thatPoint.y - this.y;
-      return this.radianToDegree(Math.atan(opposite/adjacent)) + 90;
+      return radianToDegree(Math.atan(opposite/adjacent)) + 90;
     }
     if (this.y > thatPoint.y) {
       // NE
       let opposite = this.y - thatPoint.y;
       let adjacent = this.x - thatPoint.x;
-      return this.radianToDegree(Math.atan(opposite/adjacent)) + 270;
+      return radianToDegree(Math.atan(opposite/adjacent)) + 270;
     }
     // SW
     let adjacent = thatPoint.y - this.y;
     let opposite = this.x - thatPoint.x;
-    return this.radianToDegree(Math.atan(opposite/adjacent)) + 180;
+    return radianToDegree(Math.atan(opposite/adjacent)) + 180;
   }
 
-  radianToDegree(rad) {
-    let pi = Math.PI;
-    return Math.floor(rad * (180/pi));
-  }
 
-  degreeToRadian(deg) {
-    let pi = Math.PI;
-    return deg * (pi/180);
-  }
+}
+
+function radianToDegree(rad) {
+  let pi = Math.PI;
+  return Math.floor(rad * (180/pi));
+}
+
+function degreeToRadian(deg) {
+  let pi = Math.PI;
+  return deg * (pi/180);
 }
 
 class Rectangle {

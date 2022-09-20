@@ -19,17 +19,17 @@ TA.addPlayer(new Player("Dick", "Chenney", "attack", 13, 100, 100,100));
 TA.addPlayer(new Player("Luke", "Skywalker", "attack", 13, 100, 100,100));
 TA.addPlayer(new Player("Hob", "Goblin", "attack", 13, 100, 100,100));
 
-TB.addPlayer(new Player("Tom", "Cruise", "keeper", 13, 100, 100,100));
-TB.addPlayer(new Player("Linus", "Torvald", "back", 13, 100, 100,100));
-TB.addPlayer(new Player("Jeff", "Bezos", "back", 13, 100, 100,100));
-TB.addPlayer(new Player("Tim", "Burton", "back", 13, 100, 100,100));
-TB.addPlayer(new Player("Jack", "Ripper", "mid", 13, 100, 100,100));
-TB.addPlayer(new Player("John", "Doe", "mid", 13, 100, 100,100));
-TB.addPlayer(new Player("Kim", "Ilsung", "mid", 13, 100, 100,100));
-TB.addPlayer(new Player("Joseph", "Black", "mid", 13, 100, 100,100));
-TB.addPlayer(new Player("Tony", "Manson", "attack", 13, 100, 100,100));
-TB.addPlayer(new Player("Ricky", "Mike", "attack", 13, 100, 100,100));
-TB.addPlayer(new Player("Michael", "Jackson", "attack", 13, 100, 100,100));
+TB.addPlayer(new Player("Tom", "Cruise", "keeper", 18, 100, 100,100));
+TB.addPlayer(new Player("Linus", "Torvald", "back", 18, 100, 100,100));
+TB.addPlayer(new Player("Jeff", "Bezos", "back", 18, 100, 100,100));
+TB.addPlayer(new Player("Tim", "Burton", "back", 18, 100, 100,100));
+TB.addPlayer(new Player("Jack", "Ripper", "mid", 18, 100, 100,100));
+TB.addPlayer(new Player("John", "Doe", "mid", 18, 100, 100,100));
+TB.addPlayer(new Player("Kim", "Ilsung", "mid", 18, 100, 100,100));
+TB.addPlayer(new Player("Joseph", "Black", "mid", 18, 100, 100,100));
+TB.addPlayer(new Player("Tony", "Manson", "attack", 18, 100, 100,100));
+TB.addPlayer(new Player("Ricky", "Mike", "attack", 18, 100, 100,100));
+TB.addPlayer(new Player("Michael", "Jackson", "attack", 18, 100, 100,100));
 
 const field = new Field(TA,TB);
 const game = new Game(TA,TB,field.ball);
