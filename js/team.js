@@ -18,6 +18,22 @@ class Team {
     this.currentBallZonePlayer = undefined;
   }
 
+  getPlayersSortCloser(loc) {
+    let sorted = [];
+    for(let i = 0; i < this.players.length; i++) {
+      let p = this.players[i];
+      if (p.role !== "keeper") {
+        sorted.push(p);
+      }
+    }
+    sorted.sort( function(a,b) {
+      if(a.location.distanceTo(loc) > b.location.distanceTo(loc)) return 1;
+      if(a.location.distanceTo(loc) < b.location.distanceTo(loc)) return -1;
+      return 0;
+    });
+    return sorted;
+  }
+
   getCloserPlayer(unless, role, location, minDistance) {
     let closer = this.players[0];
     if (closer.role === "keeper") {
@@ -38,8 +54,18 @@ class Team {
 
   getPlayersInRange(loc, distance) {
     let ret = [];
-    for (let i = 1; i < this.players.length; i++) {
+    for (let i = 0; i < this.players.length; i++) {
       if (this.players[i].location.distanceTo(loc) < distance) {
+        ret.push(this.players[i]);
+      }
+    }
+    return ret;
+  }
+
+  getPlayersByRole(role) {
+    let ret = [];
+    for (let i = 0;i < this.players.length; i++) {
+      if (this.players[i].role === role) {
         ret.push(this.players[i]);
       }
     }
@@ -86,16 +112,6 @@ class Team {
 
   getPlayerCount(role) {
     return this.getPlayerCount(role).length;
-  }
-
-  getPlayersByRole(role) {
-    let ret = [];
-    for (let i = 0;i < this.players.length; i++) {
-      if (this.players[i].role === role) {
-        ret[ret.length] = this.players[i];
-      }
-    }
-    return ret;
   }
 
   getZones(side, role, count) {

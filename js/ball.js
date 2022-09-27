@@ -12,7 +12,7 @@ class Ball {
   }
 
   setTrajectory(player, direction, velocityV, velocityH) {
-    console.log("Bt > dir : " + direction + " > vvel:" + velocityV + " hvel:" + velocityH + " locked:" + this.locked);
+    // console.log("Bt > dir : " + direction + " > vvel:" + velocityV + " hvel:" + velocityH + " locked:" + this.locked);
     if(this.locked === false || player.role === "keeper") {
       this.direction = direction;
       this.velocityV = velocityV;
@@ -48,26 +48,32 @@ class Ball {
       }
     }
     if (this.velocityH > 0) {
-      let posA = this.location
+      let posA = new Point(this.location.x, this.location.y);
       this.location.moveTo(this.direction, this.velocityH);
-      let posB = this.location
-      let ballPath = new Line(posA.x, posB.x, posB.x, posB.y);
-      if (field.leftGoal.isIntersects(ballPath)) {
-        field.event = "GoalLeft";
-      } else if (field.rightGoal.isIntersects(ballPath)) {
-        field.event = "GoalRight";
-      } else if (field.borderTop.isIntersects(ballPath)) {
-        field.event = "BorderTop";
-      } else if (field.borderBottom.isIntersects(ballPath)) {
-        field.event = "BorderBottom";
-      } else if (field.borderLeftTop.isIntersects(ballPath)) {
-        field.event = "BorderLeftTop";
-      } else if (field.borderLeftBottom.isIntersects(ballPath)) {
-        field.event = "BorderLeftBottom";
-      } else if (field.borderRightTop.isIntersects(ballPath)) {
-        field.event = "BorderRightTop";
-      } else if (field.borderRightBottom.isIntersects(ballPath)) {
-        field.event = "BorderRightBottom";
+      let posB = new Point(this.location.x, this.location.y);
+      let ballPath = new Line(posA.x, posA.y, posB.x, posB.y);
+      if (posB.x < 0) {
+        if (posB.y > 3200-(730/2) && posB.y < 3200-(730/2) + 730 ) {
+          game.onGoal("right");
+        } else if (posB.y < 3200-(730/2)) {
+          game.onBallOutLeftTop(this, posB.x,posB.y);
+        } else if (posB.y > 3200-(730/2)+ 730) {
+          game.onBallOutLeftBottom(this, posB.x,posB.y);
+        }
+      } else if (posB.x > field.width) {
+        if (posB.y > 3200-(730/2) && posB.y < 3200-(730/2) + 730 ) {
+          game.onGoal("left");
+        } else if (posB.y < 3200-(730/2)) {
+          game.onBallOutRightTop(this, posB.x,posB.y);
+        } else if (posB.y > 3200-(730/2)+ 730) {
+          game.onBallOutRightBottom(this, posB.x,posB.y);
+        } else {
+          console.log("OUT OF KNOWN BOUNDARY : " + this.last_kicker.fname);
+        }
+      } else if (posB.y < 0) {
+        game.onBallOutTop(this, posB.x,posB.y);
+      } else if (posB.y > field.height) {
+        game.onBallOutBottom(this, posB.x,posB.y);
       }
     }
   }
@@ -82,15 +88,17 @@ class Ball {
     let sizeAdd = (this.altitude / 100) * 20;
     canvasContext.arc(0,0,30 + sizeAdd, 0, 2 * Math.PI);
     canvasContext.closePath();
-    if (this.locked) {
-      canvasContext.fillStyle = "#F00";
-      canvasContext.strokeStyle = "#F09"
-    } else {
-      canvasContext.fillStyle = "#FFF";
+    canvasContext.fillStyle = "#FFF";
       canvasContext.strokeStyle = "#FF9"
-    }
     canvasContext.fill();
     canvasContext.stroke();
+
+    // canvasContext.fillStyle = "white";
+    // canvasContext.font = '170px serif';
+    // let txt = this.location.x + "," + this.location.y;
+    // let txtWidth = canvasContext.measureText(txt).width;
+    // canvasContext.fillText(txt, -(txtWidth / 2), -90);
+
     canvasContext.restore();
   }
 }

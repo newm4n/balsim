@@ -98,7 +98,7 @@ class Player {
       }
 
       if (this.role === "attack") {
-        if (this.location.distanceTo(opponentTeam.getGoalLine().midPoint()) < 1500.0) {
+        if (this.location.distanceTo(opponentTeam.getGoalLine().midPoint()) < 2000.0) {
           this.intent = "shoot_ball";
         } else if (myTeam.currentBallZonePlayer === this || myTeam.getCloserPlayer(undefined, "any", ball.location, 0) === this) {
           this.intent = "carry_ball_to_goal";
@@ -114,7 +114,9 @@ class Player {
           this.intent = "carry_ball_forward";
         } else if (myTeam.prevBallZonePlayer === this) {
           this.intent = "pass_ball";
-        } else {
+        } else if ((myTeam.side === "left" && ball.location.x > 8000) || (myTeam.side === "right" && ball.location.x < 2000)) {
+          this.intent = "pass_ball";
+        }else {
           if (this.intent !== "idle") {
             this.goToZone();
           }
@@ -155,14 +157,16 @@ class Player {
         game.onKeeperBall();
         this.goToZone();
         return;
-      }else if (this.intent === "kick_ball_far") {
-        console.log("kick ball far");
+      } else if (this.intent === "kick_ball_far") {
         this.ignoreBall = true;
         ball.location.x = this.location.x;
         ball.location.y = this.location.y;
-        this.heading = this.location.headingTo(opponentTeam.getGoalLine().midPoint());
-        console.log("ball heading : " + ball.location.headingTo(opponentTeam.getGoalLine().midPoint()));
-        ball.setTrajectory(this,  ball.location.headingTo(opponentTeam.getGoalLine().midPoint()), 20,90);
+
+        let mids = myTeam.getPlayersByRole("mid");
+        let idx = Math.floor(Math.random() * mids.length);
+
+        this.heading = this.location.headingTo(mids[idx].location);
+        ball.setTrajectory(this,  ball.location.headingTo(mids[idx].location), 15,this.location.distanceTo(mids[idx].location) * 0.025);
         this.holdBall = false;
         this.ignoreBallCount = 30;
         this.ignoreBall = true;
@@ -175,14 +179,15 @@ class Player {
         this.location.moveTo(this.heading, this.getSpeed());
       } else if(!ball.locked && ball.altitude < this.height) {
         if (this.intent === "shoot_ball" ) {
-          this.heading = this.location.headingTo(ball.location);
-          ball.setTrajectory(this, ball.location.headingTo(opponentTeam.getGoalLine().midPoint()), 10,90);
+          let pnt = opponentTeam.getGoalLine().randomPoint();
+          this.heading = this.location.headingTo(pnt);
+          ball.setTrajectory(this, ball.location.headingTo(pnt), 10,90);
           this.goToZone();
         } else if (this.intent === "pass_ball") {
           let closest = myTeam.getCloserPlayer(this,"any", ball.location, 1000);
           console.log(closest.role);
           this.heading = this.location.headingTo(closest.location);
-          ball.setTrajectory(this, ball.location.headingTo(closest.location), 10,ball.location.distanceTo(closest.location));
+          ball.setTrajectory(this, ball.location.headingTo(closest.location), 10, ball.location.distanceTo(closest.location) * 0.025);
           this.goToZone();
         } else if (this.intent === "carry_ball_forward" || this.intent === "carry_ball_to_goal") {
           if(opponentTeam.getPlayersInRange(ball.location, 400).length > 0) {
@@ -192,17 +197,27 @@ class Player {
                 closest = myTeam.getCloserPlayer(this, "attack", ball.location, 1000);
               }
             } else {
-              closest = myTeam.getCloserPlayer(this,"any", ball.location);
+              let myCloser = myTeam.getPlayersSortCloser(ball.location);
+              closest = myCloser[2 + Math.floor(Math.random() * 2)];
             }
             if (typeof closest === "undefined") {
-              this.heading = this.location.headingTo(ball.location);
               this.heading = this.location.headingTo(opponentTeam.getGoalLine().midPoint());
               ball.setTrajectory(this, ball.location.headingTo(opponentTeam.getGoalLine().midPoint()), 10,90);
               this.goToZone();
             } else {
               this.heading = this.location.headingTo(closest.location);
-              ball.setTrajectory(this, ball.location.headingTo(closest.location), 10, 80);
-//          ball.setTrajectory(this, ball.location.headingTo(closest.location), 10,ball.location.distanceTo(closest.location) * 10);
+              let dist = ball.location.distanceTo(closest.location);
+              let velo = 0;
+              if (dist < 500) {
+                velo = 20;
+              } else if (dist < 1000) {
+                velo = 40;
+              } else if (dist < 2000) {
+                velo = 60;
+              } else {
+                velo = 80;
+              }
+              ball.setTrajectory(this, ball.location.headingTo(closest.location), 3, velo);
               this.goToZone();
             }
           } else  if (this.intent === "carry_ball_to_goal" ) {
@@ -229,11 +244,13 @@ class Player {
         this.heading = this.location.headingTo(this.destination);
         this.location.moveTo(this.heading, this.getSpeed());
       } else {
-        this.heading = this.location.headingTo(ball.location);
+        if (Math.random() < 0.005) {
+          this.goToZone();
+        } else {
+          this.heading = this.location.headingTo(ball.location);
+        }
       }
     }
-
-
   }
 
   draw(canvasContext) {
@@ -297,11 +314,12 @@ class Player {
       canvasContext.stroke();
     }
 
-    canvasContext.lineWidth = 30;
-    canvasContext.strokeStyle = "red";
-    canvasContext.beginPath();
-    canvasContext.arc(0, 0, 100, ToJSDeg(this.heading-15), ToJSDeg(this.heading + 15), false);
-    canvasContext.stroke();
+    // draw heading indicator
+    // canvasContext.lineWidth = 30;
+    // canvasContext.strokeStyle = "red";
+    // canvasContext.beginPath();
+    // canvasContext.arc(0, 0, 100, ToJSDeg(this.heading-15), ToJSDeg(this.heading + 15), false);
+    // canvasContext.stroke();
 
     canvasContext.fillStyle = "white";
     canvasContext.font = '170px serif';

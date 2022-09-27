@@ -11,13 +11,13 @@ class Game {
   isEveryBodyIdle() {
     for (let i = 0; i < this.teamLeft.players.length; i++) {
       let player = this.teamLeft.players[i];
-      if (player.intent !== "idle" || player.location.distanceTo(player.destination) > 100) {
+      if (player.intent !== "idle" || !player.zone.isContainPoint(player.location)) {
         return false;
       }
     }
     for (let i = 0; i < this.teamRight.players.length; i++) {
       let player = this.teamRight.players[i];
-      if (player.intent !== "idle" || player.location.distanceTo(player.destination) > 100) {
+      if (player.intent !== "idle" || !player.zone.isContainPoint(player.location)) {
         return false;
       }
     }
@@ -38,20 +38,16 @@ class Game {
     }
   }
 
-  onGoal(side) {
-    this.state = "after_goal";
+  resetGame() {
     for (let i =0; i < this.teamLeft.players.length; i++) {
-      this.teamLeft.players[i].goToZone();
+      let p = this.teamLeft.players[i];
+      let pos = p.zone.getRandomPointWithin();
+      p.setPosition(pos.x, pos.y);
     }
     for (let i =0; i < this.teamRight.players.length; i++) {
-      this.teamRight.players[i].goToZone();
-    }
-    if (side === "left") {
-      this.leftTeamScore += 1;
-      // todo pick 1 mid player to the center close to the ball
-    } else {
-      this.rightTeamScore += 1;
-      // todo pic 1 mid player to the center close to the ball
+      let p = this.teamRight.players[i];
+      let pos = p.zone.getRandomPointWithin();
+      p.setPosition(pos.x, pos.y);
     }
     this.ball.location.x = 5000;
     this.ball.location.y = 3200;
@@ -62,8 +58,39 @@ class Game {
     this.ball.last_kicker = undefined;
   }
 
-  onBallOut(ball, x, y) {
-    this.state = "out";
+  onGoal(side) {
+    if (side === "left") {
+      this.leftTeamScore += 1;
+      // todo pick 1 mid player to the center close to the ball
+    } else {
+      this.rightTeamScore += 1;
+      // todo pic 1 mid player to the center close to the ball
+    }
+    this.resetGame();
+  }
+
+  onBallOutTop(ball, x, y) {
+    this.resetGame();
+  }
+
+  onBallOutBottom(ball, x, y) {
+    this.resetGame();
+  }
+
+  onBallOutLeftTop(ball, x, y) {
+    this.resetGame();
+  }
+
+  onBallOutLeftBottom(ball, x, y) {
+    this.resetGame();
+  }
+
+  onBallOutRightTop(ball, x, y) {
+    this.resetGame();
+  }
+
+  onBallOutRightBottom(ball, x, y) {
+    this.resetGame();
   }
 }
 

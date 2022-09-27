@@ -126,6 +126,22 @@ class Line {
     return new Point((this.x1 + this.x2) / 2, (this.y1 + this.y2) / 2);
   }
 
+  randomPoint() {
+    let x = 0;
+    let y = 0;
+    if (this.x1 === this.x2) {
+      x = this.x1;
+      y = (Math.random() * Math.abs(this.y1-this.y2)) + Math.min(this.y1, this.y2);
+      return new Point(x,y);
+    } else if (this.y1 === this.y2) {
+      y = this.y1;
+      x =(Math.random() * Math.abs(this.x1-this.x2)) + Math.min(this.x1, this.x2);
+      return new Point(x,y);
+    } else {
+      return this.midPoint();
+    }
+  }
+
   isIntersects(thatLine) {
     let a = this.x1;
     let b = this.y1;
