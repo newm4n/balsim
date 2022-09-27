@@ -8,10 +8,12 @@ class Ball {
     this.last_kicker = undefined;
     this.locked = false;
     this.lockCount = 10;
+    this.visible = true;
   }
 
   setTrajectory(player, direction, velocityV, velocityH) {
-    if(this.locked === false) {
+    console.log("Bt > dir : " + direction + " > vvel:" + velocityV + " hvel:" + velocityH + " locked:" + this.locked);
+    if(this.locked === false || player.role === "keeper") {
       this.direction = direction;
       this.velocityV = velocityV;
       this.velocityH = velocityH;
@@ -22,6 +24,12 @@ class Ball {
   }
 
   reposition(field, game) {
+    if (game.state === "keeperBall") {
+      this.visible = false;
+      return;
+    } else {
+      this.visible = true;
+    }
     if(this.locked && this.lockCount > 0) {
       this.lockCount--;
     } else if(this.locked && this.lockCount === 0) {
@@ -65,6 +73,9 @@ class Ball {
   }
 
   draw(canvasContext) {
+    if (this.visible === false) {
+      return;
+    }
     canvasContext.save();
     canvasContext.translate(this.location.x, this.location.y);
     canvasContext.beginPath();

@@ -1,4 +1,6 @@
 
+const KeeperCatchDistance = 150;
+
 class Player {
   constructor(fname,lname,role,speed,stamina,accuracy,technique) {
     this.fname = fname;
@@ -15,6 +17,10 @@ class Player {
     this.shirtColorA = "#0e86e8";
     this.shirtColorB = "#0c1fc7";
     this.shirtColorC = "#0cb4c7";
+
+    this.holdBall = false;
+    this.ignoreBall = false;
+    this.ignoreBallCount = 0;
 
     this.intent = "to_ball"; // to_ball, carry_ball, goal_shoot, pass_ball, to_post, idle
     this.activity = "idle"; // sprint, run, walk, idle
@@ -56,7 +62,12 @@ class Player {
   }
 
   reposition(myTeam, opponentTeam, ball, game) {
-
+    if (this.ignoreBallCount > 0) {
+      this.ignoreBallCount--;
+      if(this.ignoreBallCount === 0) {
+        this.ignoreBall = false;
+      }
+    }
     if (this.currentStamina <= 1.0 && this.currentStamina >= 0.3) {
       if (this.activity === "idle") {
         this.currentStamina += 0.02;
@@ -79,49 +90,90 @@ class Player {
     }
 
     if (game.state === "play") {
-
-        if (this.role === "attack") {
-          if (this.location.distanceTo(opponentTeam.getGoalLine().midPoint()) < 1500.0) {
-            this.intent = "shoot_ball";
-          } else if (myTeam.currentBallZonePlayer === this || myTeam.getCloserPlayer(undefined, "any", ball.location, 0) === this) {
-            this.intent = "carry_ball_to_goal";
-          } else if (myTeam.prevBallZonePlayer === this && this.location.distanceTo(ball.location) < 400.0) {
-            this.intent = "pass_ball";
-          } else {
-            if (this.intent !== "idle") {
-              this.goToZone();
-            }
-          }
-        } else if (this.role === "mid") {
-          if (myTeam.currentBallZonePlayer === this || myTeam.getCloserPlayer(undefined, "any", ball.location, 0) === this) {
-            this.intent = "carry_ball_forward";
-          } else if (myTeam.prevBallZonePlayer === this) {
-            this.intent = "pass_ball";
-          } else {
-            if (this.intent !== "idle") {
-              this.goToZone();
-            }
-          }
-        } else if (this.role === "back") {
-          if (myTeam.currentBallZonePlayer === this || myTeam.getCloserPlayer(undefined, "any", ball.location, 0) === this) {
-            this.intent = "carry_ball_forward";
-          } else if (myTeam.prevBallZonePlayer === this) {
-            this.intent = "pass_ball";
-          } else {
-            if (this.intent !== "idle") {
-              this.goToZone();
-            }
-          }
-        } else if (this.role === "keeper") {
-          this.intent = "idle";
+      if (this.holdBall) {
+        if (this.intent !== "idle") {
+          this.goToZone();
         }
+        return;
+      }
+
+      if (this.role === "attack") {
+        if (this.location.distanceTo(opponentTeam.getGoalLine().midPoint()) < 1500.0) {
+          this.intent = "shoot_ball";
+        } else if (myTeam.currentBallZonePlayer === this || myTeam.getCloserPlayer(undefined, "any", ball.location, 0) === this) {
+          this.intent = "carry_ball_to_goal";
+        } else if (myTeam.prevBallZonePlayer === this && this.location.distanceTo(ball.location) < 400.0) {
+          this.intent = "pass_ball";
+        } else {
+          if (this.intent !== "idle") {
+            this.goToZone();
+          }
+        }
+      } else if (this.role === "mid") {
+        if (myTeam.currentBallZonePlayer === this || myTeam.getCloserPlayer(undefined, "any", ball.location, 0) === this) {
+          this.intent = "carry_ball_forward";
+        } else if (myTeam.prevBallZonePlayer === this) {
+          this.intent = "pass_ball";
+        } else {
+          if (this.intent !== "idle") {
+            this.goToZone();
+          }
+        }
+      } else if (this.role === "back") {
+        if (myTeam.currentBallZonePlayer === this || myTeam.getCloserPlayer(undefined, "any", ball.location, 0) === this) {
+          this.intent = "carry_ball_forward";
+        } else if (myTeam.prevBallZonePlayer === this) {
+          this.intent = "pass_ball";
+        } else {
+          if (this.intent !== "idle") {
+            this.goToZone();
+          }
+        }
+      } else if (this.role === "keeper") {
+        if (this.holdBall) {
+          if (this.intent !== "idle") {
+            this.goToZone();
+          }
+        } else if (ball.location.distanceTo(myTeam.getGoalLine().midPoint()) < 1600 && !this.ignoreBall) {
+          this.intent = "catch_ball";
+        } else {
+          if (this.intent !== "idle") {
+            this.goToZone();
+          }
+        }
+      }
+    } else if (game.state === "keeperBall") {
+      if (this.holdBall === true && game.isEveryBodyIdle()) {
+        this.intent = "kick_ball_far";
+      }
+      // todo finish here
     }
 
     if (this.intent !== "idle") {
+      if(this.intent === "catch_ball" && this.location.distanceTo(ball.location) <= KeeperCatchDistance) {
+        this.holdBall = true;
+        game.onKeeperBall();
+        this.goToZone();
+        return;
+      }else if (this.intent === "kick_ball_far") {
+        console.log("kick ball far");
+        this.ignoreBall = true;
+        ball.location.x = this.location.x;
+        ball.location.y = this.location.y;
+        this.heading = this.location.headingTo(opponentTeam.getGoalLine().midPoint());
+        console.log("ball heading : " + ball.location.headingTo(opponentTeam.getGoalLine().midPoint()));
+        ball.setTrajectory(this,  ball.location.headingTo(opponentTeam.getGoalLine().midPoint()), 20,90);
+        this.holdBall = false;
+        this.ignoreBallCount = 30;
+        this.ignoreBall = true;
+        game.state = "play";
+        this.goToZone();
+        return;
+      }
       if (this.location.distanceTo(ball.location) > 100) {
         this.heading = this.location.headingTo(ball.location);
         this.location.moveTo(this.heading, this.getSpeed());
-      } else if(!ball.locked) {
+      } else if(!ball.locked && ball.altitude < this.height) {
         if (this.intent === "shoot_ball" ) {
           this.heading = this.location.headingTo(ball.location);
           ball.setTrajectory(this, ball.location.headingTo(opponentTeam.getGoalLine().midPoint()), 10,90);
@@ -165,6 +217,8 @@ class Player {
               ball.setTrajectory(this,  90, 0,this.speed * 2.5);
             }
           }
+        } else {
+          this.goToZone();
         }
       }
     } else {
@@ -174,6 +228,8 @@ class Player {
       if (this.location.distanceTo(this.destination) > 100) {
         this.heading = this.location.headingTo(this.destination);
         this.location.moveTo(this.heading, this.getSpeed());
+      } else {
+        this.heading = this.location.headingTo(ball.location);
       }
     }
 
@@ -202,6 +258,13 @@ class Player {
     let shoe1 = [3,-15,13,-15,26,-3,26,0,3,0];
     let shoe2 = [-3,-15,-13,-15,-26,-3,-26,0,-3,0];
 
+    // if (this.role === "keeper") {
+    //   canvasContext.strokeStyle = "red";
+    //   canvasContext.beginPath();
+    //   canvasContext.arc(0, 0, KeeperCatchDistance, 0, Math.PI * 2, false);
+    //   canvasContext.stroke();
+    // }
+
     drawArr(canvasContext,  shoe1, "black", "black");
     drawArr(canvasContext,  shoe2, "black", "black");
 
@@ -224,6 +287,16 @@ class Player {
     drawArr(canvasContext, neck, "black", this.skinColor);
     drawArr(canvasContext, head, "black", this.skinColor);
 
+    if (this.holdBall) {
+      canvasContext.beginPath();
+      canvasContext.arc(0,0 - (this.height),30, 0, 2 * Math.PI);
+      canvasContext.closePath();
+      canvasContext.fillStyle = "#FFF";
+      canvasContext.strokeStyle = "#FF9"
+      canvasContext.fill();
+      canvasContext.stroke();
+    }
+
     canvasContext.lineWidth = 30;
     canvasContext.strokeStyle = "red";
     canvasContext.beginPath();
@@ -232,9 +305,9 @@ class Player {
 
     canvasContext.fillStyle = "white";
     canvasContext.font = '170px serif';
-    let txt = this.role + "-" + this.intent;
+    let txt = this.fname + " " + this.lname;
     let txtWidth = canvasContext.measureText(txt).width;
-    canvasContext.fillText( txt, -(txtWidth/2),-390);
+    canvasContext.fillText(txt, -(txtWidth / 2), -390);
 
     canvasContext.restore();
   }

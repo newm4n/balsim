@@ -28,7 +28,7 @@ class Field {
 
   draw(canvasContext) {
     canvasContext.save();
-    let zoom = 0.12;
+    let zoom = 0.09;
     // zoom transform
     // canvasContext.transform(zoom, 0,0,zoom,0,0);
     canvasContext.translate(25,25);

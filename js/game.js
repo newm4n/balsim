@@ -5,7 +5,37 @@ class Game {
     this.teamLeft = teamLeft;
     this.teamRight = teamRight;
     this.ball = ball;
-    this.state = "play"; // after_goal, play
+    this.state = "play"; // after_goal, play, out, throw_in, keeperBall
+  }
+
+  isEveryBodyIdle() {
+    for (let i = 0; i < this.teamLeft.players.length; i++) {
+      let player = this.teamLeft.players[i];
+      if (player.intent !== "idle" || player.location.distanceTo(player.destination) > 100) {
+        return false;
+      }
+    }
+    for (let i = 0; i < this.teamRight.players.length; i++) {
+      let player = this.teamRight.players[i];
+      if (player.intent !== "idle" || player.location.distanceTo(player.destination) > 100) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  onKeeperBall() {
+    this.state = "keeperBall";
+    for (let i = 0; i < this.teamLeft.players.length; i++) {
+      if (this.teamLeft.players[i].role !== "keeper" && this.teamLeft.players[i].intent !== "idle") {
+        this.teamLeft.players[i].goToZone();
+      }
+    }
+    for (let i = 0; i < this.teamRight.players.length; i++) {
+      if (this.teamRight.players[i].role !== "keeper" && this.teamRight.players[i].intent !== "idle") {
+        this.teamRight.players[i].goToZone();
+      }
+    }
   }
 
   onGoal(side) {
@@ -30,6 +60,10 @@ class Game {
     this.ball.velocityV = 0; // in cm
     this.ball.velocityH = 0; // in cm
     this.ball.last_kicker = undefined;
+  }
+
+  onBallOut(ball, x, y) {
+    this.state = "out";
   }
 }
 
