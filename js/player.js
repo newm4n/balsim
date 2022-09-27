@@ -185,7 +185,6 @@ class Player {
           this.goToZone();
         } else if (this.intent === "pass_ball") {
           let closest = myTeam.getCloserPlayer(this,"any", ball.location, 1000);
-          console.log(closest.role);
           this.heading = this.location.headingTo(closest.location);
           ball.setTrajectory(this, ball.location.headingTo(closest.location), 10, ball.location.distanceTo(closest.location) * 0.025);
           this.goToZone();
